@@ -1,8 +1,8 @@
 package Routers
 
 import (
-	"github.com/DeniesKresna/jobhunop/Controllers"
-	"github.com/DeniesKresna/jobhunop/Middlewares"
+	"github.com/DeniesKresna/beinventaris/Controllers"
+	"github.com/DeniesKresna/beinventaris/Middlewares"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -39,9 +39,15 @@ func SetupRouter() *gin.Engine {
 		v1.GET("/academies/list", Controllers.AcademyList)
 		v1.GET("/academies/id/:id", Controllers.AcademyShow)
 		v1.GET("/academies", Controllers.AcademyIndex)
-		auth.POST("/academies", Controllers.AcademyStore)
-		auth.PATCH("/academies/:id", Controllers.AcademyUpdate)
-		auth.DELETE("/academies/:id", Controllers.AcademyDestroy)
+		v1.POST("/academies", Controllers.AcademyStore)
+		v1.PATCH("/academies/:id", Controllers.AcademyUpdate)
+		v1.DELETE("/academies/:id", Controllers.AcademyDestroy)
+
+		auth.GET("/units/list", Controllers.UnitList)
+		auth.GET("/units/id/:id", Controllers.UnitShow)
+		auth.GET("/units", Controllers.UnitIndex)
+		auth.POST("/units", Controllers.UnitStore)
+		auth.DELETE("/units/:id", Controllers.UnitDestroy)
 
 		v1.GET("/medias", func(c *gin.Context) {
 			mediaFile := c.Query("path")

@@ -4,11 +4,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/DeniesKresna/jobhunop/Configs"
-	"github.com/DeniesKresna/jobhunop/Helpers"
-	"github.com/DeniesKresna/jobhunop/Models"
-	"github.com/DeniesKresna/jobhunop/Response"
-	"github.com/DeniesKresna/jobhunop/Translations"
+	"github.com/DeniesKresna/beinventaris/Configs"
+	"github.com/DeniesKresna/beinventaris/Helpers"
+	"github.com/DeniesKresna/beinventaris/Models"
+	"github.com/DeniesKresna/beinventaris/Response"
+	"github.com/DeniesKresna/beinventaris/Translations"
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/validate"
 )

@@ -3,9 +3,9 @@ package Controllers
 import (
 	"strconv"
 
-	"github.com/DeniesKresna/jobhunop/Configs"
-	"github.com/DeniesKresna/jobhunop/Models"
-	"github.com/DeniesKresna/jobhunop/Response"
+	"github.com/DeniesKresna/beinventaris/Configs"
+	"github.com/DeniesKresna/beinventaris/Models"
+	"github.com/DeniesKresna/beinventaris/Response"
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/validate"
 )
@@ -40,7 +40,7 @@ func RoleStore(c *gin.Context) {
 		return
 	}
 
-	role.CreatorID = SessionId
+	role.UpdaterID = SessionId
 
 	if err := Configs.DB.Model(Models.Role{}).Create(&role).Error; err != nil {
 		Response.Json(c, 500, "Cant Create Role")
@@ -59,7 +59,7 @@ func RoleUpdate(c *gin.Context) {
 		return
 	}
 
-	roleUpdateInput.CreatorID = SessionId
+	roleUpdateInput.UpdaterID = SessionId
 
 	if err := Configs.DB.First(&Models.Role{}, c.Param("id")).Updates(&roleUpdateInput).Error; err != nil {
 		Response.Json(c, 500, "Cant Update Role")

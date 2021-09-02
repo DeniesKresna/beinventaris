@@ -5,10 +5,11 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/DeniesKresna/jobhunop/Models"
+	"github.com/DeniesKresna/beinventaris/Models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
@@ -26,11 +27,13 @@ func DatabaseInit() (err error) {
 
 	dsn := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ":" + strconv.Itoa(port) + ")/" + os.Getenv("DB_NAME") + "?charset=utf8mb4&parseTime=True&loc=Local"
 	//log.Fatal(dsn)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	DB = db
 	return err
 }
 
 func DatabaseMigrate() {
-	DB.AutoMigrate(&Models.User{}, &Models.Role{}, &Models.Academy{})
+	DB.AutoMigrate(&Models.User{}, &Models.Role{}, &Models.Academy{}, &Models.Unit{})
 }

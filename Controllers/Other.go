@@ -5,6 +5,8 @@ import (
 	"math"
 	"os"
 	"reflect"
+	"regexp"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -141,4 +143,40 @@ func InjectStruct(sourceSctruct interface{}, destinationStruct interface{}) {
 			dstReflectValue.FieldByName(srcField).Set(srcReflectValue.FieldByName(srcField))
 		}
 	}
+}
+
+// Filter data on from all model field by the search param
+func FilterModel(search string, sourceModel interface{}) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		var srcReflectValue = reflect.ValueOf(sourceModel)
+		if srcReflectValue.Kind() == reflect.Ptr {
+			srcReflectValue = srcReflectValue.Elem()
+		}
+		fmt.Print(srcReflectValue)
+		var srcReflectType = srcReflectValue.Type()
+
+		for i := 0; i < srcReflectValue.NumField(); i++ {
+			fieldType := srcReflectType.Field(i).Type
+			if (fieldType.Kind() >= 3 && fieldType.Kind() <= 12) || fieldType.Kind() == 24 {
+				srcField := ToSnakeCase(srcReflectType.Field(i).Name)
+
+				if i == 0 {
+					db.Where(srcField+" LIKE ?", "%"+search+"%")
+				} else {
+					db.Or(srcField+" LIKE ?", "%"+search+"%")
+				}
+			}
+		}
+
+		return db
+	}
+}
+
+var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
+var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
+
+func ToSnakeCase(str string) string {
+	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
+	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
+	return strings.ToLower(snake)
 }

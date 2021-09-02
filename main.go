@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/DeniesKresna/jobhunop/Configs"
-	"github.com/DeniesKresna/jobhunop/Routers"
+	"github.com/DeniesKresna/beinventaris/Configs"
+	"github.com/DeniesKresna/beinventaris/Routers"
 	check "github.com/asaskevich/govalidator"
 )
 

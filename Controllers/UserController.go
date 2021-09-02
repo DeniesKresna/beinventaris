@@ -3,10 +3,10 @@ package Controllers
 import (
 	"strconv"
 
-	"github.com/DeniesKresna/jobhunop/Configs"
-	"github.com/DeniesKresna/jobhunop/Helpers"
-	"github.com/DeniesKresna/jobhunop/Models"
-	"github.com/DeniesKresna/jobhunop/Response"
+	"github.com/DeniesKresna/beinventaris/Configs"
+	"github.com/DeniesKresna/beinventaris/Helpers"
+	"github.com/DeniesKresna/beinventaris/Models"
+	"github.com/DeniesKresna/beinventaris/Response"
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/validate"
 )
@@ -27,25 +27,27 @@ func UserIndex(c *gin.Context) {
 
 func UserStore(c *gin.Context) {
 	var user Models.User
-	c.ShouldBindJSON(&user)
+	var userCreate Models.UserCreate
+	c.ShouldBind(&userCreate)
 
-	v := validate.Struct(user)
+	v := validate.Struct(userCreate)
 	if !v.Validate() {
 		Response.Json(c, 422, v.Errors.One())
 		return
 	}
 
-	err := Configs.DB.Where("username = ?", user.Username).Or("email = ?", user.Email).First(&Models.User{}).Error
+	err := Configs.DB.Where("username = ?", userCreate.Username).Or("email = ?", userCreate.Email).First(&Models.User{}).Error
 	if err == nil {
 		Response.Json(c, 404, "Sudah ada user tersebut")
 		return
 	}
 
-	hashedPassword, err := Helpers.Hash(user.Password)
+	hashedPassword, err := Helpers.Hash(userCreate.Password)
 	if err != nil {
 		Response.Json(c, 400, "error hashing password")
 		return
 	}
+	InjectStruct(&userCreate, &user)
 	user.Password = string(hashedPassword)
 	user.RoleID = 1
 

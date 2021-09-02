@@ -7,9 +7,9 @@ import (
 type Role struct {
 	gorm.Model
 	Name      string `json:"name" validate:"required"`
-	CreatorID uint
+	UpdaterID uint
 
-	Creator *User
+	Updater *User
 }
 
 func (b *Role) TableName() string {
@@ -18,5 +18,5 @@ func (b *Role) TableName() string {
 
 type RoleUpdate struct {
 	Name      string `validate:"required"`
-	CreatorID uint
+	UpdaterID uint
 }

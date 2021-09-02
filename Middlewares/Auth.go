@@ -4,9 +4,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/DeniesKresna/jobhunop/Configs"
-	"github.com/DeniesKresna/jobhunop/Models"
-	"github.com/DeniesKresna/jobhunop/Response"
+	"github.com/DeniesKresna/beinventaris/Configs"
+	"github.com/DeniesKresna/beinventaris/Models"
+	"github.com/DeniesKresna/beinventaris/Response"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
@@ -40,7 +40,7 @@ func Auth(name string) gin.HandlerFunc {
 
 			var user Models.User
 			err = Configs.DB.First(&user, userId).Joins("INNER JOIN roles r ON user.role_id = r.id").
-				Where("r.name = ?", "admin").Error
+				Where("r.name = ?", name).Error
 			if err != nil {
 				Response.Json(c, 404, "User not found")
 				c.Abort()

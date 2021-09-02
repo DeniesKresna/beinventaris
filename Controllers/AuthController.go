@@ -1,13 +1,14 @@
 package Controllers
 
 import (
+	"fmt"
 	"os"
 	"time"
 
-	"github.com/DeniesKresna/jobhunop/Configs"
-	"github.com/DeniesKresna/jobhunop/Helpers"
-	"github.com/DeniesKresna/jobhunop/Models"
-	"github.com/DeniesKresna/jobhunop/Response"
+	"github.com/DeniesKresna/beinventaris/Configs"
+	"github.com/DeniesKresna/beinventaris/Helpers"
+	"github.com/DeniesKresna/beinventaris/Models"
+	"github.com/DeniesKresna/beinventaris/Response"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/validate"
@@ -25,7 +26,7 @@ func AuthLogin(c *gin.Context) {
 
 	var userLoginInput Models.UserLogin
 	c.ShouldBindJSON(&userLoginInput)
-
+	fmt.Print(userLoginInput.Email)
 	v := validate.Struct(userLoginInput)
 	if !v.Validate() {
 		Response.Json(c, 422, v.Errors.One())
