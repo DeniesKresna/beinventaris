@@ -1,9 +1,9 @@
 package Translations
 
-var UnitNotFound string = "Unit tidak ditemukan"
-var UnitExist string = "Sudah ada unit tersebut"
-var UnitCreateServerError string = "Tidak bisa buat unit. Kesalahan server"
-var UnitUpdateServerError string = "Tidak bisa ubah unit. Kesalahan server"
-var UnitCreated string = "Unit berhasil dibuat"
-var UnitUpdated string = "Unit berhasil diubah"
-var UnitDeleted string = "Unit berhasil dihapus"
+var UnitNotFound string = "Satuan tidak ditemukan"
+var UnitExist string = "Sudah ada Satuan tersebut"
+var UnitCreateServerError string = "Tidak bisa buat Satuan. Kesalahan server"
+var UnitUpdateServerError string = "Tidak bisa ubah Satuan. Kesalahan server"
+var UnitCreated string = "Satuan berhasil dibuat"
+var UnitUpdated string = "Satuan berhasil diubah"
+var UnitDeleted string = "Satuan berhasil dihapus"

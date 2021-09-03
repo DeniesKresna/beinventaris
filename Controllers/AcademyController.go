@@ -65,7 +65,7 @@ func AcademyStore(c *gin.Context) {
 
 	err := Configs.DB.Where("name = ?", academyCreate.Name).First(&Models.Academy{}).Error
 	if err == nil {
-		Response.Json(c, 500, Translations.AcademyExist)
+		Response.Json(c, 409, Translations.AcademyExist)
 		return
 	}
 

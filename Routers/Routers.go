@@ -49,6 +49,19 @@ func SetupRouter() *gin.Engine {
 		auth.POST("/units", Controllers.UnitStore)
 		auth.DELETE("/units/:id", Controllers.UnitDestroy)
 
+		auth.GET("/rooms/list", Controllers.RoomList)
+		auth.GET("/rooms/id/:id", Controllers.RoomShow)
+		auth.GET("/rooms", Controllers.RoomIndex)
+		auth.POST("/rooms", Controllers.RoomStore)
+		auth.DELETE("/rooms/:id", Controllers.RoomDestroy)
+
+		auth.GET("/goods-types/list", Controllers.GoodsTypeList)
+		auth.GET("/goods-types/id/:id", Controllers.GoodsTypeShow)
+		auth.GET("/goods-types", Controllers.GoodsTypeIndex)
+		auth.POST("/goods-types", Controllers.GoodsTypeStore)
+		auth.PATCH("/goods-types/:id", Controllers.GoodsTypeUpdate)
+		auth.DELETE("/goods-types/:id", Controllers.GoodsTypeDestroy)
+
 		v1.GET("/medias", func(c *gin.Context) {
 			mediaFile := c.Query("path")
 			c.File(mediaFile)

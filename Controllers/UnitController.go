@@ -1,7 +1,6 @@
 package Controllers
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/DeniesKresna/beinventaris/Configs"
@@ -58,7 +57,6 @@ func UnitStore(c *gin.Context) {
 		Response.Json(c, 422, err)
 		return
 	}
-	fmt.Print(UnitCreate)
 	v := validate.Struct(UnitCreate)
 	if !v.Validate() {
 		Response.Json(c, 422, v.Errors.One())
@@ -68,7 +66,7 @@ func UnitStore(c *gin.Context) {
 
 	err := Configs.DB.Where("name = ?", UnitCreate.Name).First(&Models.Unit{}).Error
 	if err == nil {
-		Response.Json(c, 500, Translations.UnitExist)
+		Response.Json(c, 409, Translations.UnitExist)
 		return
 	}
 
