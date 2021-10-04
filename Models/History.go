@@ -19,7 +19,18 @@ type History struct {
 	Updater   *User
 	Inventory *Inventory
 	Room      *Room      `gorm:"foreignKey:EntityID"`
-	Condtion  *Condition `gorm:"foreignKey:EntityID"`
+	Condition *Condition `gorm:"foreignKey:EntityID"`
+}
+
+type HistoryIndexData struct {
+	gorm.Model
+	EntityType  string    `json:"entity_type"`
+	EntityName  string    `json:"entity_name"`
+	EntityID    uint      `json:"EntityID"`
+	HistoryTime time.Time `json:"history_time"`
+	Description string    `json:"description"`
+	ImageUrl    string    `json:"image_url"`
+	UpdaterName string    `json:"updater_name"`
 }
 
 type HistoryCreate struct {

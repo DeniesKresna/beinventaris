@@ -75,6 +75,11 @@ func SetupRouter() *gin.Engine {
 		auth.POST("/inventories", Controllers.InventoryStore)
 		auth.DELETE("/inventories/:id", Controllers.InventoryDestroy)
 
+		auth.GET("/histories/list", Controllers.HistoryList)
+		auth.GET("/histories/inventoryid/:id", Controllers.HistoryIndex)
+		auth.POST("/histories", Controllers.HistoryStore)
+		auth.DELETE("/histories/:id", Controllers.HistoryDestroy)
+
 		v1.GET("/medias", func(c *gin.Context) {
 			mediaFile := c.Query("path")
 			c.File(mediaFile)

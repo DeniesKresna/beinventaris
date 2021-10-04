@@ -124,6 +124,7 @@ func InventoryStore(c *gin.Context) {
 			{"doc": "statusDoc", "field": "status_doc_url"},
 		}
 		// upload inventory documents
+
 		for _, v := range documentsLoop {
 			// upload inventory image
 			docFile, err := c.FormFile(v["doc"])
