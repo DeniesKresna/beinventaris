@@ -24,6 +24,7 @@ type History struct {
 
 type HistoryIndexData struct {
 	gorm.Model
+	InventoryID uint      `json:"InventoryID"`
 	EntityType  string    `json:"entity_type"`
 	EntityName  string    `json:"entity_name"`
 	EntityID    uint      `json:"EntityID"`

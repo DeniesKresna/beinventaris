@@ -77,6 +77,7 @@ func SetupRouter() *gin.Engine {
 
 		auth.GET("/histories/list", Controllers.HistoryList)
 		auth.GET("/histories/inventoryid/:id", Controllers.HistoryIndex)
+		auth.POST("/histories/:id", Controllers.HistoryUpdate)
 		auth.POST("/histories", Controllers.HistoryStore)
 		auth.DELETE("/histories/:id", Controllers.HistoryDestroy)
 

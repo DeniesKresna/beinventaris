@@ -24,7 +24,7 @@ func HistoryIndex(c *gin.Context) {
 	inventoryId := c.Param("id")
 
 	Configs.DB.Model(Models.History{}).Where("inventory_id", inventoryId).Count(&count)
-	Configs.DB.Table("histories as h").Select(`h.id, h.entity_type, 
+	Configs.DB.Table("histories as h").Select(`h.id, h.inventory_id, h.entity_type, 
 		h.history_time, h.entity_id, h.description, h.image_url, u.name as updater_name,
 		h.created_at, h.updated_at,
 		CASE 
@@ -136,20 +136,14 @@ func HistoryUpdate(c *gin.Context) {
 		return
 	} else {
 		file, err := c.FormFile("image")
-		if err != nil {
-			Response.Json(c, 500, Translations.HistoryUpdateUploadError)
-			return
-		}
-		filename := "history-" + strconv.FormatUint(uint64(history.ID), 10) + "-" + file.Filename
-		filename = strings.ReplaceAll(filename, " ", "-")
-		Helpers.DeleteFile(filename)
-		if err := c.SaveUploadedFile(file, Helpers.HistoryPath(filename)); err != nil {
-			Response.Json(c, 500, Translations.HistoryUpdateUploadError)
-			return
-		}
-		if err := Configs.DB.Model(&history).Update("image_url", Helpers.HistoryPath(filename)).Error; err != nil {
-			Response.Json(c, 500, Translations.HistoryUpdateUploadError)
-			return
+		if err == nil {
+			filename := "history-" + strconv.FormatUint(uint64(history.ID), 10) + "-" + file.Filename
+			filename = strings.ReplaceAll(filename, " ", "-")
+			Helpers.DeleteFile(filename)
+			if err := c.SaveUploadedFile(file, Helpers.HistoryPath(filename)); err == nil {
+				if err := Configs.DB.Model(&history).Update("image_url", Helpers.HistoryPath(filename)).Error; err == nil {
+				}
+			}
 		}
 
 		Response.Json(c, 200, Translations.HistoryUpdated)
