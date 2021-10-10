@@ -25,17 +25,17 @@ func HistoryIndex(c *gin.Context) {
 
 	Configs.DB.Model(Models.History{}).Where("inventory_id", inventoryId).Count(&count)
 	Configs.DB.Table("histories as h").Select(`h.id, h.inventory_id, h.entity_type, 
-		h.history_time, h.entity_id, h.description, h.image_url, u.name as updater_name,
+		h.history_time, h.room_id, h.condition_id, h.description, h.image_url, u.name as updater_name,
 		h.created_at, h.updated_at,
 		CASE 
 			WHEN h.entity_type = 'room' THEN r.name
 			ELSE c.name
 		END AS entity_name
 	`).Joins("join users as u on u.id = h.updater_id").
-		Joins("left join rooms as r on r.id = h.entity_id").
-		Joins("left join conditions as c on c.id = h.entity_id").
-		Where("h.inventory_id", inventoryId).Offset(pageSize * (page - 1)).Limit(pageSize).Scan(&histories).
-		Where("h.deleted_at is NULL").Order("h.history_time DESC")
+		Joins("left join rooms as r on r.id = h.room_id").
+		Joins("left join conditions as c on c.id = h.condition_id").
+		Where("h.inventory_id", inventoryId).
+		Where("h.deleted_at is NULL").Order("h.history_time DESC").Offset(pageSize * (page - 1)).Limit(pageSize).Scan(&histories)
 
 	res.CurrentPage = page
 	res.Data = histories
@@ -76,6 +76,11 @@ func HistoryStore(c *gin.Context) {
 	}
 	//--------------------------------------------------
 	historyCreate.UpdaterID = SessionId
+	if historyCreate.EntityType == "room" {
+		historyCreate.RoomID = historyCreate.EntityID
+	} else {
+		historyCreate.ConditionID = historyCreate.EntityID
+	}
 
 	InjectStruct(&historyCreate, &history)
 	if err := Configs.DB.Create(&history).Error; err != nil {
@@ -129,6 +134,13 @@ func HistoryUpdate(c *gin.Context) {
 	}
 
 	historyUpdate.UpdaterID = SessionId
+	if historyUpdate.EntityType == "room" {
+		historyUpdate.RoomID = historyUpdate.EntityID
+		historyUpdate.ConditionID = 0
+	} else {
+		historyUpdate.RoomID = 0
+		historyUpdate.ConditionID = historyUpdate.EntityID
+	}
 
 	InjectStruct(&historyUpdate, &history)
 	if err := Configs.DB.Save(&history).Error; err != nil {

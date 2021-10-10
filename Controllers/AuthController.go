@@ -36,13 +36,13 @@ func AuthLogin(c *gin.Context) {
 	var user Models.User
 	err = Configs.DB.Preload("Role").Where("email = ?", userLoginInput.Email).First(&user).Error
 	if err != nil {
-		Response.Json(c, 404, "wrong email")
+		Response.Json(c, 404, "Email tidak ditemukan")
 		return
 	}
 
 	err = Helpers.VerifyPassword(user.Password, userLoginInput.Password)
 	if err != nil {
-		Response.Json(c, 404, "wrong password")
+		Response.Json(c, 404, "Password salah")
 		return
 	}
 

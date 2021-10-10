@@ -4,6 +4,7 @@ import (
 	"github.com/DeniesKresna/beinventaris/Controllers"
 	"github.com/DeniesKresna/beinventaris/Middlewares"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,6 +22,8 @@ func SetupRouter() *gin.Engine {
 			},
 			MaxAge: 12 * time.Hour,*/
 	}))
+	// Serve frontend static files
+	r.Use(static.Serve("/", static.LocalFile("./Client/Build", true)))
 	v1 := r.Group("/api/v1")
 	{
 		auth := v1.Group("/", Middlewares.Auth("administrator"))
@@ -70,6 +73,7 @@ func SetupRouter() *gin.Engine {
 
 		auth.GET("/inventories/list", Controllers.InventoryList)
 		auth.GET("/inventories/detail", Controllers.InventoryShow)
+		auth.GET("/inventories/detail/:id", Controllers.InventoryShowDetail)
 		auth.GET("/inventories", Controllers.InventoryIndex)
 		auth.POST("/inventories/:id", Controllers.InventoryUpdate)
 		auth.POST("/inventories", Controllers.InventoryStore)

@@ -27,7 +27,7 @@ func InventoryIndex(c *gin.Context) {
 		Sort:    "id desc",
 	}).Paginate(Configs.DB.Preload("Updater").Preload("GoodsType").Preload("Unit").
 		Preload("Conditions", func(db *gorm.DB) *gorm.DB {
-			return db.Where("histories.entity_type", "condition").Order("histories.created_at DESC").Limit(1)
+			return db.Preload("Condition").Where("histories.entity_type", "condition").Order("histories.created_at DESC").Limit(1)
 		}).
 		Preload("Rooms", func(db *gorm.DB) *gorm.DB {
 			return db.Preload("Room").Where("histories.entity_type", "room").Order("histories.created_at DESC").Limit(1)
@@ -60,6 +60,26 @@ func InventoryShow(c *gin.Context) {
 		Preload("Histories", func(db *gorm.DB) *gorm.DB {
 			return db.Order("histories.created_at DESC")
 		}).Where("goods_type_id", goodsTypeId).Where("nup", nup).First(&inventory).Error
+
+	if err != nil {
+		Response.Json(c, 404, Translations.InventoryNotFound)
+		return
+	}
+
+	Response.Json(c, 200, inventory)
+}
+
+func InventoryShowDetail(c *gin.Context) {
+	id := c.Param("id")
+
+	var inventory Models.Inventory
+	err := Configs.DB.Preload("Updater").Preload("GoodsType").Preload("Unit").
+		Preload("Histories", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Preload("Updater").
+				Preload("Condition").
+				Preload("Room")
+		}).Where("id", id).First(&inventory).Error
 
 	if err != nil {
 		Response.Json(c, 404, Translations.InventoryNotFound)
@@ -146,6 +166,7 @@ func InventoryStore(c *gin.Context) {
 		if err := c.ShouldBind(&historyCreate); err == nil {
 			historyCreate.InventoryID = inventory.ID
 			historyCreate.EntityType = "room"
+			historyCreate.RoomID = historyCreate.EntityID
 			historyCreate.UpdaterID = SessionId
 
 			var history Models.History
