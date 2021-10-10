@@ -1,7 +1,6 @@
 package Controllers
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -26,7 +25,7 @@ func AuthLogin(c *gin.Context) {
 
 	var userLoginInput Models.UserLogin
 	c.ShouldBindJSON(&userLoginInput)
-	fmt.Print(userLoginInput.Email)
+
 	v := validate.Struct(userLoginInput)
 	if !v.Validate() {
 		Response.Json(c, 422, v.Errors.One())

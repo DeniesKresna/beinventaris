@@ -152,7 +152,7 @@ func FilterModel(search string, sourceModel interface{}) func(db *gorm.DB) *gorm
 		if srcReflectValue.Kind() == reflect.Ptr {
 			srcReflectValue = srcReflectValue.Elem()
 		}
-		fmt.Print(srcReflectValue)
+
 		var srcReflectType = srcReflectValue.Type()
 
 		for i := 0; i < srcReflectValue.NumField(); i++ {

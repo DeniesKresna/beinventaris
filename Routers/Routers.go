@@ -30,21 +30,17 @@ func SetupRouter() *gin.Engine {
 
 		auth.GET("/users", Controllers.UserIndex)
 		auth.GET("/users/me", Controllers.UserMe)
-		v1.POST("/users", Controllers.UserStore)
-		auth.PUT("/users/:id", Controllers.UserUpdate)
+		auth.GET("/users/reset/:id", Controllers.UserReset)
+		auth.POST("/users", Controllers.UserStore)
+		auth.POST("/users/change-password", Controllers.UserChangePassword)
+		auth.PATCH("/users/:id", Controllers.UserUpdate)
 
 		auth.GET("/roles", Controllers.RoleIndex)
+		auth.GET("/roles/list", Controllers.RoleList)
 		auth.POST("/roles", Controllers.RoleStore)
 		auth.PUT("/roles/:id", Controllers.RoleUpdate)
 
 		v1.POST("users/login", Controllers.AuthLogin)
-
-		v1.GET("/academies/list", Controllers.AcademyList)
-		v1.GET("/academies/id/:id", Controllers.AcademyShow)
-		v1.GET("/academies", Controllers.AcademyIndex)
-		v1.POST("/academies", Controllers.AcademyStore)
-		v1.PATCH("/academies/:id", Controllers.AcademyUpdate)
-		v1.DELETE("/academies/:id", Controllers.AcademyDestroy)
 
 		auth.GET("/units/list", Controllers.UnitList)
 		auth.GET("/units/id/:id", Controllers.UnitShow)

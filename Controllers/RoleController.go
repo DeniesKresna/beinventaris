@@ -23,6 +23,13 @@ func RoleIndex(c *gin.Context) {
 	Response.Json(c, 200, p)
 }
 
+func RoleList(c *gin.Context) {
+	var roles []Models.Role
+
+	Configs.DB.Find(&roles)
+	Response.Json(c, 200, roles)
+}
+
 func RoleStore(c *gin.Context) {
 	SetSessionId(c)
 	var role Models.Role
