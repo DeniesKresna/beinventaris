@@ -11,7 +11,8 @@ require (
 	github.com/gookit/validate v1.2.11
 	github.com/joho/godotenv v1.3.0
 	github.com/mattn/go-isatty v0.0.13 // indirect
-	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
+	github.com/xuri/excelize/v2 v2.4.1
+	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	golang.org/x/sys v0.0.0-20210820121016-41cdb8703e55 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gorm.io/driver/mysql v1.0.5

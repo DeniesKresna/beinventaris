@@ -14,8 +14,8 @@ func SetupRouter() *gin.Engine {
 		//AllowOrigins:     []string{"https://foo.com"},
 		AllowAllOrigins: true,
 		AllowMethods:    []string{"PUT", "PATCH", "GET", "POST", "DELETE", "OPTIONS"},
-		AllowHeaders:    []string{"Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"}, /*
-			ExposeHeaders:    []string{"Content-Length"},
+		AllowHeaders:    []string{"Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:   []string{"Content-Disposition"}, /*
 			AllowCredentials: true,
 			AllowOriginFunc: func(origin string) bool {
 				return origin == "https://github.com"
@@ -67,6 +67,7 @@ func SetupRouter() *gin.Engine {
 		auth.POST("/conditions", Controllers.ConditionStore)
 		auth.DELETE("/conditions/:id", Controllers.ConditionDestroy)
 
+		auth.GET("/inventories/getexcel", Controllers.InventoryExport)
 		auth.GET("/inventories/list", Controllers.InventoryList)
 		auth.GET("/inventories/detail", Controllers.InventoryShow)
 		auth.GET("/inventories/detail/:id", Controllers.InventoryShowDetail)
