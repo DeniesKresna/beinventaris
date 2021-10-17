@@ -46,14 +46,14 @@ func InventoryList(c *gin.Context) {
 }
 
 func InventoryShow(c *gin.Context) {
-	goodsTypeId, ok := c.GetQuery("goods-type-id")
-	if !ok {
-		Response.Json(c, 404, Translations.InventoryNotFound)
-		return
-	}
-	nup, ok := c.GetQuery("nup")
-	if !ok {
-		Response.Json(c, 404, Translations.InventoryNotFound)
+	filterCode := struct {
+		GoodsTypeId uint
+		Nup         uint
+	}{}
+
+	//bind and validate request-------------------------
+	if err := c.ShouldBind(&filterCode); err != nil {
+		Response.Json(c, 422, err)
 		return
 	}
 
@@ -61,7 +61,35 @@ func InventoryShow(c *gin.Context) {
 	err := Configs.DB.Preload("Updater").Preload("GoodsType").Preload("Unit").
 		Preload("Histories", func(db *gorm.DB) *gorm.DB {
 			return db.Order("histories.created_at DESC")
-		}).Where("goods_type_id", goodsTypeId).Where("nup", nup).First(&inventory).Error
+		}).Where("goods_type_id", filterCode.GoodsTypeId).Where("nup", filterCode.Nup).First(&inventory).Error
+
+	if err != nil {
+		Response.Json(c, 404, Translations.InventoryNotFound)
+		return
+	}
+
+	Response.Json(c, 200, inventory)
+}
+
+func InventoryCodeNameShow(c *gin.Context) {
+	filterCode := struct {
+		Code string
+		Nup  uint
+	}{}
+
+	//bind and validate request-------------------------
+	if err := c.ShouldBind(&filterCode); err != nil {
+		Response.Json(c, 422, err)
+		return
+	}
+
+	var goodsType Models.GoodsType
+	if err := Configs.DB.Where("code", filterCode.Code).First(&goodsType).Error; err != nil {
+		Response.Json(c, 404, Translations.GoodsTypeNotFound)
+	}
+
+	var inventory Models.Inventory
+	err := Configs.DB.Where("goods_type_id", goodsType.ID).Where("nup", filterCode.Nup).First(&inventory).Error
 
 	if err != nil {
 		Response.Json(c, 404, Translations.InventoryNotFound)

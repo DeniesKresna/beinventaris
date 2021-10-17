@@ -69,7 +69,8 @@ func SetupRouter() *gin.Engine {
 
 		auth.GET("/inventories/getexcel", Controllers.InventoryExport)
 		auth.GET("/inventories/list", Controllers.InventoryList)
-		auth.GET("/inventories/detail", Controllers.InventoryShow)
+		auth.POST("/inventories-code/detail", Controllers.InventoryShow)
+		auth.POST("/inventories-codename/detail", Controllers.InventoryCodeNameShow)
 		auth.GET("/inventories/detail/:id", Controllers.InventoryShowDetail)
 		auth.GET("/inventories", Controllers.InventoryIndex)
 		auth.POST("/inventories/:id", Controllers.InventoryUpdate)
