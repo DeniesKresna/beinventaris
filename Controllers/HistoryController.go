@@ -1,6 +1,7 @@
 package Controllers
 
 import (
+	"database/sql"
 	"math"
 	"strconv"
 	"strings"
@@ -77,9 +78,11 @@ func HistoryStore(c *gin.Context) {
 	//--------------------------------------------------
 	historyCreate.UpdaterID = SessionId
 	if historyCreate.EntityType == "room" {
-		historyCreate.RoomID = historyCreate.EntityID
+		historyCreate.RoomID = sql.NullInt32{Int32: int32(historyCreate.EntityID), Valid: true}
+		historyCreate.ConditionID = sql.NullInt32{Valid: false}
 	} else {
-		historyCreate.ConditionID = historyCreate.EntityID
+		historyCreate.ConditionID = sql.NullInt32{Int32: int32(historyCreate.EntityID), Valid: true}
+		historyCreate.RoomID = sql.NullInt32{Valid: false}
 	}
 
 	InjectStruct(&historyCreate, &history)
@@ -135,11 +138,11 @@ func HistoryUpdate(c *gin.Context) {
 
 	historyUpdate.UpdaterID = SessionId
 	if historyUpdate.EntityType == "room" {
-		historyUpdate.RoomID = historyUpdate.EntityID
-		historyUpdate.ConditionID = 0
+		historyUpdate.RoomID = sql.NullInt32{Int32: int32(historyUpdate.EntityID), Valid: true}
+		historyUpdate.ConditionID = sql.NullInt32{Valid: false}
 	} else {
-		historyUpdate.RoomID = 0
-		historyUpdate.ConditionID = historyUpdate.EntityID
+		historyUpdate.ConditionID = sql.NullInt32{Int32: int32(historyUpdate.EntityID), Valid: true}
+		historyUpdate.RoomID = sql.NullInt32{Valid: false}
 	}
 
 	InjectStruct(&historyUpdate, &history)
@@ -151,7 +154,7 @@ func HistoryUpdate(c *gin.Context) {
 		if err == nil {
 			filename := "history-" + strconv.FormatUint(uint64(history.ID), 10) + "-" + file.Filename
 			filename = strings.ReplaceAll(filename, " ", "-")
-			Helpers.DeleteFile(filename)
+			_ = Helpers.InventoryDocumentsPath(filename)
 			if err := c.SaveUploadedFile(file, Helpers.HistoryPath(filename)); err == nil {
 				if err := Configs.DB.Model(&history).Update("image_url", Helpers.HistoryPath(filename)).Error; err == nil {
 				}

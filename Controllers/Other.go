@@ -2,12 +2,14 @@ package Controllers
 
 import (
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"reflect"
 	"regexp"
 	"strings"
 
+	"github.com/DeniesKresna/beinventaris/Response"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -179,4 +181,20 @@ func ToSnakeCase(str string) string {
 	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
 	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
 	return strings.ToLower(snake)
+}
+
+func DownloadDocuments(c *gin.Context) {
+	mediaFile := c.Query("path")
+	f, err := os.Open("./" + mediaFile)
+	if err != nil {
+		Response.Json(c, 500, err)
+		return
+	}
+	defer f.Close()
+	var filename = strings.Split(mediaFile, "/")
+	fmt.Println(filename[len(filename)-1])
+	c.Header("Content-Description", "File Transfer")
+	c.Header("Content-Disposition", "attachment; filename="+filename[len(filename)-1])
+
+	io.Copy(c.Writer, f)
 }

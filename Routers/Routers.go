@@ -88,6 +88,8 @@ func SetupRouter() *gin.Engine {
 			c.File(mediaFile)
 		})
 
+		v1.GET("/documents", Controllers.DownloadDocuments)
+
 		//v1.GET("users", Controllers.UserIndex)
 		//v1.GET("users/:id", Controllers.ShowUser)
 		//v1.PUT("users/:id", Controllers.UserUpdate)

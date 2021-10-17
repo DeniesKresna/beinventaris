@@ -1,6 +1,7 @@
 package Controllers
 
 import (
+	"database/sql"
 	"strconv"
 	"strings"
 	"time"
@@ -196,7 +197,8 @@ func InventoryStore(c *gin.Context) {
 		if err := c.ShouldBind(&historyCreate); err == nil {
 			historyCreate.InventoryID = inventory.ID
 			historyCreate.EntityType = "room"
-			historyCreate.RoomID = historyCreate.EntityID
+			historyCreate.RoomID = sql.NullInt32{Int32: int32(historyCreate.EntityID), Valid: true}
+			historyCreate.ConditionID = sql.NullInt32{Valid: false}
 			historyCreate.UpdaterID = SessionId
 
 			var history Models.History
@@ -268,7 +270,7 @@ func InventoryUpdate(c *gin.Context) {
 		if err == nil {
 			filename := "inventory-" + strconv.FormatUint(uint64(inventory.ID), 10) + "-" + file.Filename
 			filename = strings.ReplaceAll(filename, " ", "-")
-			Helpers.DeleteFile(filename)
+			_ = Helpers.DeleteFile(Helpers.InventoryDocumentsPath(filename))
 			if err := c.SaveUploadedFile(file, Helpers.InventoryPath(filename)); err == nil {
 				if err := Configs.DB.Model(&inventory).Update("image_url", Helpers.InventoryPath(filename)).Error; err != nil {
 
@@ -289,7 +291,7 @@ func InventoryUpdate(c *gin.Context) {
 			}
 			docfilename := "inventory-" + v["doc"] + strconv.FormatUint(uint64(inventory.ID), 10) + "-" + docFile.Filename
 			docfilename = strings.ReplaceAll(docfilename, " ", "-")
-			Helpers.DeleteFile(docfilename)
+			_ = Helpers.DeleteFile(Helpers.InventoryDocumentsPath(docfilename))
 			if err := c.SaveUploadedFile(docFile, Helpers.InventoryDocumentsPath(docfilename)); err != nil {
 				continue
 			}

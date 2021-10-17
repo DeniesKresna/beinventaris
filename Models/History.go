@@ -1,6 +1,7 @@
 package Models
 
 import (
+	"database/sql"
 	"time"
 
 	"gorm.io/gorm"
@@ -8,13 +9,13 @@ import (
 
 type History struct {
 	gorm.Model
-	InventoryID uint      `json:"inventoryID"`
-	EntityType  string    `json:"entity_type"`
-	RoomID      uint      `json:"RoomID"`
-	ConditionID uint      `json:"ConditionID"`
-	HistoryTime time.Time `json:"history_time"`
-	Description string    `json:"description"`
-	ImageUrl    string    `json:"image_url"`
+	InventoryID uint          `json:"inventoryID"`
+	EntityType  string        `json:"entity_type"`
+	RoomID      sql.NullInt32 `json:"RoomID"`
+	ConditionID sql.NullInt32 `json:"ConditionID"`
+	HistoryTime time.Time     `json:"history_time"`
+	Description string        `json:"description"`
+	ImageUrl    string        `json:"image_url"`
 	UpdaterID   uint
 
 	Updater   *User
@@ -40,8 +41,8 @@ type HistoryCreate struct {
 	InventoryID uint   `form:"InventoryID" validate:"required|int"`
 	EntityType  string `form:"entity_type" validate:"in:room,condition"`
 	EntityID    uint   `form:"EntityID" validate:"required|int"`
-	RoomID      uint
-	ConditionID uint
+	RoomID      sql.NullInt32
+	ConditionID sql.NullInt32
 	HistoryTime time.Time `form:"history_time" validate:"required"`
 	Description string    `form:"description" validate:"required"`
 	UpdaterID   uint
@@ -51,8 +52,8 @@ type HistoryUpdate struct {
 	InventoryID uint   `form:"InventoryID" validate:"required|int"`
 	EntityType  string `form:"entity_type" validate:"in:room,condition"`
 	EntityID    uint   `form:"EntityID" validate:"required|int"`
-	RoomID      uint
-	ConditionID uint
+	RoomID      sql.NullInt32
+	ConditionID sql.NullInt32
 	HistoryTime time.Time `form:"history_time" validate:"required"`
 	Description string    `form:"description" validate:"required"`
 	UpdaterID   uint
