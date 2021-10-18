@@ -2,3 +2,6 @@
 .air.conf
 vendor
 Assets
+Assets/Inventories
+Assets/inventories/Documents
+Assets/Histories
