@@ -4,9 +4,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/DeniesKresna/jobhunop/Configs"
-	"github.com/DeniesKresna/jobhunop/Models"
-	"github.com/DeniesKresna/jobhunop/Response"
+	"github.com/DeniesKresna/beinventaris/Configs"
+	"github.com/DeniesKresna/beinventaris/Models"
+	"github.com/DeniesKresna/beinventaris/Response"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
@@ -16,7 +16,7 @@ func Auth(name string) gin.HandlerFunc {
 		const BEARER_SCHEMA = "Bearer"
 		authHeader := c.GetHeader("Authorization")
 		if !strings.Contains(authHeader, BEARER_SCHEMA) {
-			Response.Json(c, 401, "You must login first")
+			Response.Json(c, 401, "Kamu harus login dulu")
 			c.Abort()
 			return
 		}
@@ -28,7 +28,7 @@ func Auth(name string) gin.HandlerFunc {
 		})
 
 		if err != nil {
-			Response.Json(c, 401, "Not allowed access this page")
+			Response.Json(c, 401, "Sesi anda telah habis, atau anda belum login. Silakan login ulang")
 			c.Abort()
 			return
 		}
@@ -40,9 +40,9 @@ func Auth(name string) gin.HandlerFunc {
 
 			var user Models.User
 			err = Configs.DB.First(&user, userId).Joins("INNER JOIN roles r ON user.role_id = r.id").
-				Where("r.name = ?", "admin").Error
+				Where("r.name = ?", name).Error
 			if err != nil {
-				Response.Json(c, 404, "User not found")
+				Response.Json(c, 404, "Pengguna tidak ditemukan")
 				c.Abort()
 				return
 			}
@@ -50,7 +50,7 @@ func Auth(name string) gin.HandlerFunc {
 			c.Set("sessionId", userId)
 			//fmt.Println(claims)
 		} else {
-			Response.Json(c, 401, "You dont have access")
+			Response.Json(c, 401, "Kamu tidak punya akses untuk halaman ini")
 			c.Abort()
 			return
 		}
