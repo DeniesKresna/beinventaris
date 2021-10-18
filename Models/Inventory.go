@@ -36,8 +36,8 @@ type InventoryCreate struct {
 	Price       uint      `form:"price" validate:"required|int"`
 	UnitID      uint      `validate:"required|int"`
 	GoodsTypeID uint      `validate:"required|int"`
-	HistoryTime time.Time `form:"history_time" validate:"required"`
-	Description string    `form:"description" validate:"required"`
+	HistoryTime time.Time `form:"history_time"`
+	Description string    `form:"description"`
 	UpdaterID   uint      `validate:"-"`
 }
 

@@ -2,6 +2,8 @@ package Controllers
 
 import (
 	"database/sql"
+	"io"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -30,10 +32,10 @@ func InventoryIndex(c *gin.Context) {
 		Sort:    "id desc",
 	}).Paginate(Configs.DB.Preload("Updater").Preload("GoodsType").Preload("Unit").
 		Preload("Conditions", func(db *gorm.DB) *gorm.DB {
-			return db.Preload("Condition").Where("histories.entity_type", "condition").Order("histories.created_at DESC").Limit(1)
+			return db.Preload("Condition").Where("histories.inventory_id", "inventories.id").Where("histories.entity_type", "condition").Order("histories.created_at DESC").Limit(1)
 		}).
 		Preload("Rooms", func(db *gorm.DB) *gorm.DB {
-			return db.Preload("Room").Where("histories.entity_type", "room").Order("histories.created_at DESC").Limit(1)
+			return db.Preload("Room").Where("histories.inventory_id", "inventories.id").Where("histories.entity_type", "room").Order("histories.created_at DESC").Limit(1)
 		}).Omit("Histories").Scopes(FilterModel(search, Models.Inventory{})), &inventories)
 
 	Response.Json(c, 200, p)
@@ -103,14 +105,42 @@ func InventoryCodeNameShow(c *gin.Context) {
 func InventoryShowDetail(c *gin.Context) {
 	id := c.Param("id")
 
-	var inventory Models.Inventory
-	err := Configs.DB.Preload("Updater").Preload("GoodsType").Preload("Unit").
+	var inventory struct {
+		gorm.Model
+		Name              string `json:"name"`
+		ImageUrl          string `json:"imageUrl"`
+		ProcurementDocUrl string `json:"procurementDocUrl"`
+		StatusDocUrl      string `json:"statusDocUrl"`
+		Nup               uint   `json:"nup"`
+		Year              uint   `json:"year"`
+		Quantity          uint   `json:"quantity"`
+		Price             uint   `json:"price"`
+		UnitID            uint
+		GoodsTypeID       uint
+		UpdaterID         uint
+
+		Updater   *Models.User
+		GoodsType *Models.GoodsType
+		Unit      *Models.Unit
+		Histories []Models.History
+		Room      Models.Room
+		Condition Models.Condition
+	}
+	err := Configs.DB.Model(Models.Inventory{}).Preload("Updater").Preload("GoodsType").Preload("Unit").
 		Preload("Histories", func(db *gorm.DB) *gorm.DB {
 			return db.
 				Preload("Updater").
 				Preload("Condition").
 				Preload("Room")
 		}).Where("id", id).First(&inventory).Error
+
+	if err != nil {
+		Response.Json(c, 404, Translations.InventoryNotFound)
+		return
+	}
+
+	Configs.DB.Model(Models.Room{}).Joins("join histories h on h.room_id = rooms.id").Where("h.inventory_id", inventory.ID).Where("h.entity_type", "room").Order("h.history_time DESC").First(&inventory.Room)
+	Configs.DB.Model(Models.Condition{}).Joins("join histories h on h.condition_id = conditions.id").Where("h.inventory_id", inventory.ID).Where("h.entity_type", "condition").Order("h.history_time DESC").First(&inventory.Condition)
 
 	if err != nil {
 		Response.Json(c, 404, Translations.InventoryNotFound)
@@ -184,9 +214,18 @@ func InventoryStore(c *gin.Context) {
 			}
 			docfilename := "inventory-" + v["doc"] + strconv.FormatUint(uint64(inventory.ID), 10) + "-" + docFile.Filename
 			docfilename = strings.ReplaceAll(docfilename, " ", "-")
-			if err := c.SaveUploadedFile(docFile, Helpers.InventoryDocumentsPath(docfilename)); err != nil {
-				continue
-			}
+			/*
+				if err := c.SaveUploadedFile(docFile, Helpers.InventoryDocumentsPath(docfilename)); err != nil {
+					continue
+				}*/
+			src, _ := file.Open()
+			defer src.Close()
+
+			dst, _ := os.Create(docfilename)
+			defer dst.Close()
+
+			io.Copy(dst, src)
+
 			if err := Configs.DB.Model(&inventory).Update(v["field"], Helpers.InventoryDocumentsPath(docfilename)).Error; err != nil {
 				continue
 			}
@@ -367,7 +406,7 @@ func InventoryExport(c *gin.Context) {
 		var conditionName = strings.ToLower(val.ConditionName)
 		if conditionName == "baik" {
 			f.SetCellValue(sheet, "K"+rows, 1)
-		} else if conditionName == "kurang baik" {
+		} else if conditionName == "rusak ringan" {
 			f.SetCellValue(sheet, "L"+rows, 1)
 		} else {
 			f.SetCellValue(sheet, "M"+rows, 1)
