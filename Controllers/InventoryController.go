@@ -221,7 +221,7 @@ func InventoryStore(c *gin.Context) {
 			src, _ := file.Open()
 			defer src.Close()
 
-			dst, _ := os.Create(docfilename)
+			dst, _ := os.Create(Helpers.InventoryDocumentsPath(docfilename))
 			defer dst.Close()
 
 			io.Copy(dst, src)
@@ -323,6 +323,7 @@ func InventoryUpdate(c *gin.Context) {
 		}
 		// upload inventory documents
 		for _, v := range documentsLoop {
+
 			// upload inventory image
 			docFile, err := c.FormFile(v["doc"])
 			if err != nil {
@@ -330,10 +331,17 @@ func InventoryUpdate(c *gin.Context) {
 			}
 			docfilename := "inventory-" + v["doc"] + strconv.FormatUint(uint64(inventory.ID), 10) + "-" + docFile.Filename
 			docfilename = strings.ReplaceAll(docfilename, " ", "-")
-			_ = Helpers.DeleteFile(Helpers.InventoryDocumentsPath(docfilename))
-			if err := c.SaveUploadedFile(docFile, Helpers.InventoryDocumentsPath(docfilename)); err != nil {
-				continue
-			}
+			/*
+				if err := c.SaveUploadedFile(docFile, Helpers.InventoryDocumentsPath(docfilename)); err != nil {
+					continue
+				}*/
+			src, _ := file.Open()
+			defer src.Close()
+
+			dst, _ := os.Create(Helpers.InventoryDocumentsPath(docfilename))
+			defer dst.Close()
+
+			io.Copy(dst, src)
 			if err := Configs.DB.Model(&inventory).Update(v["field"], Helpers.InventoryDocumentsPath(docfilename)).Error; err != nil {
 				continue
 			}
