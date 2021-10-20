@@ -67,6 +67,13 @@ func SetupRouter() *gin.Engine {
 		auth.POST("/conditions", Controllers.ConditionStore)
 		auth.DELETE("/conditions/:id", Controllers.ConditionDestroy)
 
+		auth.GET("/periods/list", Controllers.PeriodList)
+		auth.GET("/periods/id/:id", Controllers.PeriodShow)
+		auth.GET("/periods", Controllers.PeriodIndex)
+		auth.POST("/periods", Controllers.PeriodStore)
+		auth.PATCH("/periods/:id", Controllers.PeriodUpdate)
+		auth.DELETE("/periods/:id", Controllers.PeriodDestroy)
+
 		auth.GET("/inventories/getexcel", Controllers.InventoryExport)
 		auth.GET("/inventories/list", Controllers.InventoryList)
 		auth.POST("/inventories-code/detail", Controllers.InventoryShow)
