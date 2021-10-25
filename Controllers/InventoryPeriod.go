@@ -36,20 +36,20 @@ func InventoryPeriodIndex(c *gin.Context) {
 		GoodsTypeCode     string    `json:"goods_type_code"`
 		UpdaterName       string    `json:"user_name"`
 	}{}
-	/*
-		p, _ := (&PConfig{
-			Page:    page,
-			PerPage: pageSize,
-			Path:    c.FullPath(),
-			Sort:    "id desc",
-		}).Paginate(Configs.DB.Preload("Updater").Preload("GoodsType").Preload("Unit").
-			Preload("Conditions", func(db *gorm.DB) *gorm.DB {
-				return db.Preload("Condition").Where("histories.inventory_id", "inventories.id").Where("histories.entity_type", "condition").Order("histories.created_at DESC").Limit(1)
-			}).
-			Preload("Rooms", func(db *gorm.DB) *gorm.DB {
-				return db.Preload("Room").Where("histories.inventory_id", "inventories.id").Where("histories.entity_type", "room").Order("histories.created_at DESC").Limit(1)
-			}).Omit("Histories").Scopes(FilterModel(search, Models.Inventory{})), &inventories)
-	*/
+
+	var filtered = struct {
+		GoodsType uint `form:"goods-type"`
+		Unit      uint `form:"unit"`
+		Room      uint `form:"room"`
+		Condition uint `form:"condition"`
+		Period    uint `form:"period"`
+	}{}
+
+	if err := c.Bind(&filtered); err != nil {
+		Response.Json(c, 422, Translations.InventoryFilteredNotFound)
+		return
+	}
+
 	var res Result
 	var count int64
 
