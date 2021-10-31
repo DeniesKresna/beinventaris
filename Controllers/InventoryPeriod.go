@@ -51,6 +51,9 @@ func InventoryPeriodIndex(c *gin.Context) {
 	if filtered.Period == 0 {
 		if err := Configs.DB.Model(Models.Period{}).Where("active", 1).First(&period).Error; err == nil {
 			filtered.Period = period.ID
+		} else {
+			Response.Json(c, 422, Translations.PeriodNotFound)
+			return
 		}
 	}
 
