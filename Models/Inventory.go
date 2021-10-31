@@ -26,6 +26,7 @@ type Inventory struct {
 	Histories  []History
 	Rooms      []History
 	Conditions []History
+	Periods    []Period `gorm:"many2many:inventory_period;"`
 }
 
 type InventoryCreate struct {

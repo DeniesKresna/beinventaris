@@ -10,3 +10,4 @@ var InventoryCreateUploadError string = "Tidak bisa buat Inventaris. Upload gamb
 var InventoryUpdateUploadError string = "Ubah Inventaris berhasil. Upload gambar gagal"
 var InventoryDeleted string = "Inventaris berhasil dihapus"
 var InventoryFilteredNotFound string = "Filter Inventaris salah"
+var InventoryUpdatePeriodSuccess string = "Update Inventarisasi berhasil"

@@ -47,6 +47,19 @@ func PeriodShow(c *gin.Context) {
 	Response.Json(c, 200, period)
 }
 
+func PeriodActive(c *gin.Context) {
+	id := c.Param("id")
+	var period Models.Period
+	err := Configs.DB.Preload("Updater").Where("active", 1).First(&period, id).Error
+
+	if err != nil {
+		Response.Json(c, 200, nil)
+		return
+	}
+
+	Response.Json(c, 200, period)
+}
+
 func PeriodStore(c *gin.Context) {
 	SetSessionId(c)
 	var period Models.Period
