@@ -56,3 +56,11 @@ type InventoryUpdate struct {
 func (b *Inventory) TableName() string {
 	return "inventories"
 }
+
+type InventoryFilterField struct {
+	GoodsType uint `form:"goods-type"`
+	Unit      uint `form:"unit"`
+	Room      uint `form:"room"`
+	Condition uint `form:"condition"`
+	Period    uint `form:"period"`
+}
