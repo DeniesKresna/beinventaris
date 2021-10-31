@@ -26,6 +26,7 @@ type Inventory struct {
 	Histories  []History
 	Rooms      []History
 	Conditions []History
+	Periods    []Period `gorm:"many2many:inventory_period;"`
 }
 
 type InventoryCreate struct {
@@ -54,4 +55,12 @@ type InventoryUpdate struct {
 
 func (b *Inventory) TableName() string {
 	return "inventories"
+}
+
+type InventoryFilterField struct {
+	GoodsType uint `form:"goods-type"`
+	Unit      uint `form:"unit"`
+	Room      uint `form:"room"`
+	Condition uint `form:"condition"`
+	Period    uint `form:"period"`
 }

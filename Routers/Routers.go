@@ -69,6 +69,7 @@ func SetupRouter() *gin.Engine {
 
 		auth.GET("/periods/list", Controllers.PeriodList)
 		auth.GET("/periods/id/:id", Controllers.PeriodShow)
+		auth.GET("/periods/active", Controllers.PeriodActive)
 		auth.GET("/periods", Controllers.PeriodIndex)
 		auth.POST("/periods", Controllers.PeriodStore)
 		auth.PATCH("/periods/:id", Controllers.PeriodUpdate)
@@ -78,12 +79,15 @@ func SetupRouter() *gin.Engine {
 		auth.GET("/inventories/list", Controllers.InventoryList)
 		auth.POST("/inventories-code/detail", Controllers.InventoryShow)
 		auth.POST("/inventories-codename/detail", Controllers.InventoryCodeNameShow)
+		auth.POST("/inventories-period", Controllers.InventoryUpdatePeriod)
 		auth.GET("/inventories/detail/:id", Controllers.InventoryShowDetail)
 		auth.GET("/inventories", Controllers.InventoryIndex)
 		auth.POST("/inventories/:id", Controllers.InventoryUpdate)
 		auth.POST("/inventories", Controllers.InventoryStore)
 		auth.DELETE("/inventories/:id", Controllers.InventoryDestroy)
 		auth.GET("/inventories-period", Controllers.InventoryPeriodIndex)
+		auth.GET("/inventories-period/getexcel", Controllers.InventoryPeriodExport)
+		auth.POST("/inventories-period/delete", Controllers.InventoryPeriodDelete)
 
 		auth.GET("/histories/list", Controllers.HistoryList)
 		auth.GET("/histories/inventoryid/:id", Controllers.HistoryIndex)

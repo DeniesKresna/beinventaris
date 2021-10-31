@@ -173,6 +173,7 @@ func InventoryShowDetail(c *gin.Context) {
 		Histories []Models.History
 		Room      Models.Room
 		Condition Models.Condition
+		Periods   []Models.Period
 	}
 	err := Configs.DB.Model(Models.Inventory{}).Preload("Updater").Preload("GoodsType").Preload("Unit").
 		Preload("Histories", func(db *gorm.DB) *gorm.DB {
@@ -189,6 +190,7 @@ func InventoryShowDetail(c *gin.Context) {
 
 	Configs.DB.Model(Models.Room{}).Joins("join histories h on h.room_id = rooms.id").Where("h.inventory_id", inventory.ID).Where("h.entity_type", "room").Order("h.history_time DESC").First(&inventory.Room)
 	Configs.DB.Model(Models.Condition{}).Joins("join histories h on h.condition_id = conditions.id").Where("h.inventory_id", inventory.ID).Where("h.entity_type", "condition").Order("h.history_time DESC").First(&inventory.Condition)
+	Configs.DB.Model(Models.Period{}).Joins("join inventory_period ip on ip.period_id = periods.id").Where("ip.inventory_id", inventory.ID).Scan(&inventory.Periods)
 
 	if err != nil {
 		Response.Json(c, 404, Translations.InventoryNotFound)
@@ -480,6 +482,40 @@ func InventoryExport(c *gin.Context) {
 	c.Header("Content-Description", "File Transfer")
 	c.Header("Content-Disposition", "attachment; filename="+crtFormated+".xlsx")
 	c.Data(200, "application/octet-stream", buf.Bytes())
+}
+
+func InventoryUpdatePeriod(c *gin.Context) {
+	var period Models.Period
+	var inventory Models.Inventory
+	inventoryPeriod := struct {
+		InventoryId uint `json:"inventory_id"`
+		PeriodId    uint `json:"period_id"`
+		AddMode     bool `json:"add_mode"`
+	}{}
+
+	if err := c.ShouldBind(&inventoryPeriod); err != nil {
+		Response.Json(c, 422, err)
+		return
+	}
+
+	if err := Configs.DB.Model(Models.Period{}).First(&period, inventoryPeriod.PeriodId).Error; err != nil {
+		Response.Json(c, 422, Translations.PeriodNotFound)
+		return
+	}
+
+	if err := Configs.DB.Model(Models.Inventory{}).First(&inventory, inventoryPeriod.InventoryId).Error; err != nil {
+		Response.Json(c, 422, Translations.InventoryNotFound)
+		return
+	}
+
+	if inventoryPeriod.AddMode {
+		Configs.DB.Model(&inventory).Association("Periods").Append([]Models.Period{period})
+	} else {
+		Configs.DB.Model(&inventory).Association("Periods").Delete([]Models.Period{period})
+	}
+
+	Response.Json(c, 200, Translations.InventoryUpdatePeriodSuccess)
+	return
 }
 
 func InventoryDestroy(c *gin.Context) {
