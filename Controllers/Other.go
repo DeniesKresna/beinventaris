@@ -49,9 +49,8 @@ type PConfig struct {
 }
 
 // Paginate ..
-func (c *PConfig) Paginate(db *gorm.DB, any interface{}) (Result, *gorm.DB) {
+func (c *PConfig) Paginate(db *gorm.DB, any interface{}, count int64) (Result, *gorm.DB) {
 	var r Result
-	var count int64
 
 	offset := (c.Page - 1) * c.PerPage
 	d := db.Offset(offset).Limit(c.PerPage)
@@ -60,7 +59,7 @@ func (c *PConfig) Paginate(db *gorm.DB, any interface{}) (Result, *gorm.DB) {
 		d.Order(c.Sort)
 	}
 
-	d.Find(any).Count(&count)
+	db.Find(any)
 
 	var lastIndex int64 = int64(c.PerPage) * int64(c.Page)
 	if lastIndex > count {
@@ -197,4 +196,17 @@ func DownloadDocuments(c *gin.Context) {
 	c.Header("Content-Disposition", "attachment; filename="+filename[len(filename)-1])
 
 	io.Copy(c.Writer, f)
+}
+
+func Copy(source interface{}, destin interface{}) {
+	x := reflect.ValueOf(source)
+	if x.Kind() == reflect.Ptr {
+		starX := x.Elem()
+		y := reflect.New(starX.Type())
+		starY := y.Elem()
+		starY.Set(starX)
+		reflect.ValueOf(destin).Elem().Set(y.Elem())
+	} else {
+		destin = x.Interface()
+	}
 }

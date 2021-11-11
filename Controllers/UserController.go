@@ -14,14 +14,18 @@ import (
 func UserIndex(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+	search := c.DefaultQuery("search", "")
 	var users []Models.User
+	var count int64
+
+	Configs.DB.Model(Models.User{}).Scopes(FilterModel(search, Models.User{})).Count(&count)
 	p, _ := (&PConfig{
 		Page:    page,
 		PerPage: pageSize,
 		Path:    c.FullPath(),
 		Sort:    "id desc",
 	}).Paginate(Configs.DB.
-		Preload("Role").Where("id > ?", 0), &users)
+		Preload("Role").Where("id > ?", 0).Scopes(FilterModel(search, Models.User{})), &users, count)
 	Response.Json(c, 200, p)
 }
 

@@ -13,13 +13,17 @@ import (
 func RoleIndex(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+	search := c.DefaultQuery("search", "")
 	var roles []Models.Role
+	var count int64
+
+	Configs.DB.Model(Models.Role{}).Scopes(FilterModel(search, Models.Role{})).Count(&count)
 	p, _ := (&PConfig{
 		Page:    page,
 		PerPage: pageSize,
 		Path:    c.FullPath(),
 		Sort:    "id desc",
-	}).Paginate(Configs.DB, &roles)
+	}).Paginate(Configs.DB.Scopes(FilterModel(search, Models.Role{})), &roles, count)
 	Response.Json(c, 200, p)
 }
 

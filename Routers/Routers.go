@@ -1,6 +1,9 @@
 package Routers
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/DeniesKresna/beinventaris/Controllers"
 	"github.com/DeniesKresna/beinventaris/Middlewares"
 	"github.com/gin-contrib/cors"
@@ -82,7 +85,6 @@ func SetupRouter() *gin.Engine {
 		auth.POST("/inventories-period", Controllers.InventoryUpdatePeriod)
 		auth.GET("/inventories/detail/:id", Controllers.InventoryShowDetail)
 		auth.GET("/inventories", Controllers.InventoryIndex)
-		auth.POST("/inventories/:id", Controllers.InventoryUpdate)
 		auth.POST("/inventories", Controllers.InventoryStore)
 		auth.DELETE("/inventories/:id", Controllers.InventoryDestroy)
 		auth.GET("/inventories-period", Controllers.InventoryPeriodIndex)
@@ -96,11 +98,25 @@ func SetupRouter() *gin.Engine {
 		auth.DELETE("/histories/:id", Controllers.HistoryDestroy)
 
 		v1.GET("/medias", func(c *gin.Context) {
+			fmt.Print("./Assets/logo.jpeg")
 			mediaFile := c.Query("path")
 			c.File(mediaFile)
 		})
 
-		v1.GET("/documents", Controllers.DownloadDocuments)
+		v1.POST("/ivt", func(c *gin.Context) {
+			path := c.PostForm("path")
+			s := strings.Split(path, "/")
+			ext := s[len(s)-1]
+			s = strings.Split(path, "/")
+			//fname := s[len(s)-1]
+			//fmt.Print("./Assets/Inventories/Documents/inventory-procurementDoc1-Invoice-#-1-Denies-July.pdf")
+			c.Header("Content-Description", "Simulation File Download")
+			c.Header("Content-Transfer-Encoding", "binary")
+			c.Header("Content-Disposition", "attachment; filename=download."+ext)
+			c.Header("Content-Type", "application/octet-stream")
+
+			c.File("./Assets/Inventories/Documents/inventory-procurementDoc1-Invoice-#-1-Denies-July.pdf")
+		})
 
 		//v1.GET("users", Controllers.UserIndex)
 		//v1.GET("users/:id", Controllers.ShowUser)
