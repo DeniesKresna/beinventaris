@@ -2,7 +2,6 @@ package Routers
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/DeniesKresna/beinventaris/Controllers"
 	"github.com/DeniesKresna/beinventaris/Middlewares"
@@ -103,20 +102,7 @@ func SetupRouter() *gin.Engine {
 			c.File(mediaFile)
 		})
 
-		v1.POST("/ivt", func(c *gin.Context) {
-			path := c.PostForm("path")
-			s := strings.Split(path, "/")
-			ext := s[len(s)-1]
-			s = strings.Split(path, "/")
-			//fname := s[len(s)-1]
-			//fmt.Print("./Assets/Inventories/Documents/inventory-procurementDoc1-Invoice-#-1-Denies-July.pdf")
-			c.Header("Content-Description", "Simulation File Download")
-			c.Header("Content-Transfer-Encoding", "binary")
-			c.Header("Content-Disposition", "attachment; filename=download."+ext)
-			c.Header("Content-Type", "application/octet-stream")
-
-			c.File("./Assets/Inventories/Documents/inventory-procurementDoc1-Invoice-#-1-Denies-July.pdf")
-		})
+		v1.GET("/ivt", Controllers.InventoryDownloadDocuments)
 
 		//v1.GET("users", Controllers.UserIndex)
 		//v1.GET("users/:id", Controllers.ShowUser)

@@ -516,5 +516,40 @@ func InventoryDestroy(c *gin.Context) {
 }
 
 func InventoryDownloadDocuments(c *gin.Context) {
+	inventoryId := c.DefaultQuery("inventoryId", "")
+	docType := c.DefaultQuery("docType", "")
+	if inventoryId == "" || !(docType == "status" || docType == "procurement") {
+		return
+	}
+	var inventory Models.Inventory
 
+	err := Configs.DB.First(&inventory, inventoryId).Error
+	if err != nil {
+		return
+	}
+
+	var s = make([]string, 0)
+	var url string
+	if docType == "procurement" {
+		if inventory.ProcurementDocUrl == "" {
+			return
+		}
+		s = strings.Split(inventory.ProcurementDocUrl, "/")
+		url = inventory.ProcurementDocUrl
+	}
+	if docType == "status" {
+		if inventory.StatusDocUrl == "" {
+			return
+		}
+		s = strings.Split(inventory.StatusDocUrl, "/")
+		url = inventory.StatusDocUrl
+	}
+	ext := s[len(s)-1]
+	c.Header("Content-Description", "Document File Download")
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.Header("Content-Disposition", "attachment; filename="+ext)
+	c.Header("Content-Type", "application/octet-stream")
+
+	c.File("./" + url)
+	return
 }
