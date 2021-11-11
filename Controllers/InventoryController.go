@@ -60,7 +60,7 @@ func InventoryIndex(c *gin.Context) {
 		Joins("left join units as un on un.id = i.unit_id").
 		Joins("left join goods_types as gt on gt.id = i.goods_type_id").
 		Joins("left join users as us on us.id = i.updater_id").
-		Where("i.deleted_at is NULL").Group("i.id").Where("i.name like ?", "%"+search+"%").Offset(pageSize * (page - 1)).Limit(pageSize).Scan(&inventories)
+		Where("i.deleted_at is NULL").Group("i.id").Order("i.updated_at DESC").Where("i.name like ?", "%"+search+"%").Offset(pageSize * (page - 1)).Limit(pageSize).Scan(&inventories)
 
 	res.CurrentPage = page
 	res.Data = inventories

@@ -73,7 +73,7 @@ func InventoryPeriodIndex(c *gin.Context) {
 		Joins("left join goods_types as gt on gt.id = i.goods_type_id").
 		Joins("left join users as us on us.id = i.updater_id").
 		Joins("left join inventory_period as ip on ip.inventory_id = i.id").
-		Where("i.deleted_at is NULL").Where("name like ?", "&"+search+"%").Group("i.id").Scopes(InventoryFilterData(filtered))
+		Where("i.deleted_at is NULL").Where("name like ?", "&"+search+"%").Group("i.id").Order("i.updated_at DESC").Scopes(InventoryFilterData(filtered))
 
 	query.Count(&count)
 	query.Offset(pageSize * (page - 1)).Limit(pageSize).Scan(&inventories)
