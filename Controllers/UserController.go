@@ -163,7 +163,15 @@ func UserChangePassword(c *gin.Context) {
 }
 
 func UserMe(c *gin.Context) {
-	Response.Json(c, 200, me(c))
+	SetSessionId(c)
+	var user Models.User
+	err := Configs.DB.Preload("Role").First(&user, SessionId).Error
+	if err != nil {
+		Response.Json(c, 401, "Pengguna tidak ditemukan")
+		return
+	}
+	Response.Json(c, 200, user)
+	return
 }
 
 func me(c *gin.Context) *Models.User {

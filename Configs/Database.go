@@ -36,7 +36,7 @@ func DatabaseInit() (err error) {
 
 func DatabaseMigrate() {
 	DB.AutoMigrate(&Models.User{}, &Models.Role{}, &Models.Academy{}, &Models.Unit{}, &Models.Room{}, &Models.GoodsType{}, &Models.Inventory{},
-		&Models.Condition{}, &Models.History{}, &Models.Period{})
+		&Models.Condition{}, &Models.History{}, &Models.Period{}, &Models.Survey{})
 }
 
 func init() {

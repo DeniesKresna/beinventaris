@@ -50,6 +50,13 @@ func SetupRouter() *gin.Engine {
 		auth.POST("/units", Controllers.UnitStore)
 		auth.DELETE("/units/:id", Controllers.UnitDestroy)
 
+		auth.GET("/surveys/list", Controllers.SurveyList)
+		auth.GET("/surveys/id/:id", Controllers.SurveyShow)
+		auth.GET("/surveys", Controllers.SurveyIndex)
+		auth.GET("/surveys/me", Controllers.SurveyMe)
+		auth.POST("/surveys", Controllers.SurveyStore)
+		auth.DELETE("/surveys/:id", Controllers.SurveyDestroy)
+
 		auth.GET("/rooms/list", Controllers.RoomList)
 		auth.GET("/rooms/id/:id", Controllers.RoomShow)
 		auth.GET("/rooms", Controllers.RoomIndex)
