@@ -18,7 +18,7 @@ import (
 func InventoryPeriodIndex(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
-	//search := c.DefaultQuery("search", "")
+	search := c.DefaultQuery("search", "")
 	var inventories = []struct {
 		ID                uint      `json:"ID"`
 		UpdatedAt         time.Time `json:"updated_at"`
@@ -73,7 +73,7 @@ func InventoryPeriodIndex(c *gin.Context) {
 		Joins("left join goods_types as gt on gt.id = i.goods_type_id").
 		Joins("left join users as us on us.id = i.updater_id").
 		Joins("left join inventory_period as ip on ip.inventory_id = i.id").
-		Where("i.deleted_at is NULL").Scopes(InventoryFilterData(filtered))
+		Where("i.deleted_at is NULL").Where("name like ?", "&"+search+"%").Group("i.id").Order("i.updated_at DESC").Scopes(InventoryFilterData(filtered))
 
 	query.Count(&count)
 	query.Offset(pageSize * (page - 1)).Limit(pageSize).Scan(&inventories)
@@ -192,7 +192,7 @@ func InventoryPeriodExport(c *gin.Context) {
 		Joins("left join goods_types as gt on gt.id = i.goods_type_id").
 		Joins("left join users as us on us.id = i.updater_id").
 		Joins("left join inventory_period as ip on ip.inventory_id = i.id").
-		Where("i.deleted_at is NULL").Where("ip.period_id", periodIDInt)
+		Where("i.deleted_at is NULL").Group("i.id").Where("ip.period_id", periodIDInt)
 
 	query.Scan(&inventories)
 

@@ -23,7 +23,7 @@ import (
 func InventoryIndex(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
-	//search := c.DefaultQuery("search", "")
+	search := c.DefaultQuery("search", "")
 	var inventories = []struct {
 		ID                uint      `json:"ID"`
 		UpdatedAt         time.Time `json:"updated_at"`
@@ -44,24 +44,11 @@ func InventoryIndex(c *gin.Context) {
 		GoodsTypeCode     string    `json:"goods_type_code"`
 		UpdaterName       string    `json:"user_name"`
 	}{}
-	/*
-		p, _ := (&PConfig{
-			Page:    page,
-			PerPage: pageSize,
-			Path:    c.FullPath(),
-			Sort:    "id desc",
-		}).Paginate(Configs.DB.Preload("Updater").Preload("GoodsType").Preload("Unit").
-			Preload("Conditions", func(db *gorm.DB) *gorm.DB {
-				return db.Preload("Condition").Where("histories.inventory_id", "inventories.id").Where("histories.entity_type", "condition").Order("histories.created_at DESC").Limit(1)
-			}).
-			Preload("Rooms", func(db *gorm.DB) *gorm.DB {
-				return db.Preload("Room").Where("histories.inventory_id", "inventories.id").Where("histories.entity_type", "room").Order("histories.created_at DESC").Limit(1)
-			}).Omit("Histories").Scopes(FilterModel(search, Models.Inventory{})), &inventories)
-	*/
+
 	var res Result
 	var count int64
 
-	Configs.DB.Model(Models.Inventory{}).Count(&count)
+	Configs.DB.Model(Models.Inventory{}).Where("name like ?", "%"+search+"%").Count(&count)
 	subQueryRoom := Configs.DB.Select("inventory_id,room_id").Where("entity_type = ?", "room").Order("history_time DESC").Table("histories")
 	subQueryCondition := Configs.DB.Select("inventory_id,condition_id").Where("entity_type = ?", "condition").Order("history_time DESC").Table("histories")
 	Configs.DB.Table("inventories as i").Select(`i.id,i.name,i.nup,i.year,i.deleted_at,i.updated_at, i.created_at, i.procurement_doc_url, i.status_doc_url, i.image_url,
@@ -73,7 +60,7 @@ func InventoryIndex(c *gin.Context) {
 		Joins("left join units as un on un.id = i.unit_id").
 		Joins("left join goods_types as gt on gt.id = i.goods_type_id").
 		Joins("left join users as us on us.id = i.updater_id").
-		Where("i.deleted_at is NULL").Offset(pageSize * (page - 1)).Limit(pageSize).Scan(&inventories)
+		Where("i.deleted_at is NULL").Group("i.id").Order("i.updated_at DESC").Where("i.name like ?", "%"+search+"%").Offset(pageSize * (page - 1)).Limit(pageSize).Scan(&inventories)
 
 	res.CurrentPage = page
 	res.Data = inventories
@@ -381,17 +368,11 @@ func InventoryUpdate(c *gin.Context) {
 			}
 			docfilename := "inventory-" + v["doc"] + strconv.FormatUint(uint64(inventory.ID), 10) + "-" + docFile.Filename
 			docfilename = strings.ReplaceAll(docfilename, " ", "-")
-			/*
-				if err := c.SaveUploadedFile(docFile, Helpers.InventoryDocumentsPath(docfilename)); err != nil {
-					continue
-				}*/
-			src, _ := file.Open()
-			defer src.Close()
 
-			dst, _ := os.Create(Helpers.InventoryDocumentsPath(docfilename))
-			defer dst.Close()
+			if err := c.SaveUploadedFile(docFile, Helpers.InventoryDocumentsPath(docfilename)); err != nil {
+				continue
+			}
 
-			io.Copy(dst, src)
 			if err := Configs.DB.Model(&inventory).Update(v["field"], Helpers.InventoryDocumentsPath(docfilename)).Error; err != nil {
 				continue
 			}
@@ -531,5 +512,44 @@ func InventoryDestroy(c *gin.Context) {
 	Configs.DB.Delete(&inventory)
 
 	Response.Json(c, 200, Translations.InventoryDeleted)
+	return
+}
+
+func InventoryDownloadDocuments(c *gin.Context) {
+	inventoryId := c.DefaultQuery("inventoryId", "")
+	docType := c.DefaultQuery("docType", "")
+	if inventoryId == "" || !(docType == "status" || docType == "procurement") {
+		return
+	}
+	var inventory Models.Inventory
+
+	err := Configs.DB.First(&inventory, inventoryId).Error
+	if err != nil {
+		return
+	}
+
+	var s = make([]string, 0)
+	var url string
+	if docType == "procurement" {
+		if inventory.ProcurementDocUrl == "" {
+			return
+		}
+		s = strings.Split(inventory.ProcurementDocUrl, "/")
+		url = inventory.ProcurementDocUrl
+	}
+	if docType == "status" {
+		if inventory.StatusDocUrl == "" {
+			return
+		}
+		s = strings.Split(inventory.StatusDocUrl, "/")
+		url = inventory.StatusDocUrl
+	}
+	ext := s[len(s)-1]
+	c.Header("Content-Description", "Document File Download")
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.Header("Content-Disposition", "attachment; filename="+ext)
+	c.Header("Content-Type", "application/octet-stream")
+
+	c.File("./" + url)
 	return
 }

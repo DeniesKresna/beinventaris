@@ -1,6 +1,8 @@
 package Routers
 
 import (
+	"fmt"
+
 	"github.com/DeniesKresna/beinventaris/Controllers"
 	"github.com/DeniesKresna/beinventaris/Middlewares"
 	"github.com/gin-contrib/cors"
@@ -48,6 +50,13 @@ func SetupRouter() *gin.Engine {
 		auth.POST("/units", Controllers.UnitStore)
 		auth.DELETE("/units/:id", Controllers.UnitDestroy)
 
+		auth.GET("/surveys/list", Controllers.SurveyList)
+		auth.GET("/surveys/id/:id", Controllers.SurveyShow)
+		auth.GET("/surveys", Controllers.SurveyIndex)
+		auth.GET("/surveys/me", Controllers.SurveyMe)
+		auth.POST("/surveys", Controllers.SurveyStore)
+		auth.DELETE("/surveys/:id", Controllers.SurveyDestroy)
+
 		auth.GET("/rooms/list", Controllers.RoomList)
 		auth.GET("/rooms/id/:id", Controllers.RoomShow)
 		auth.GET("/rooms", Controllers.RoomIndex)
@@ -82,7 +91,6 @@ func SetupRouter() *gin.Engine {
 		auth.POST("/inventories-period", Controllers.InventoryUpdatePeriod)
 		auth.GET("/inventories/detail/:id", Controllers.InventoryShowDetail)
 		auth.GET("/inventories", Controllers.InventoryIndex)
-		auth.POST("/inventories/:id", Controllers.InventoryUpdate)
 		auth.POST("/inventories", Controllers.InventoryStore)
 		auth.DELETE("/inventories/:id", Controllers.InventoryDestroy)
 		auth.GET("/inventories-period", Controllers.InventoryPeriodIndex)
@@ -96,11 +104,12 @@ func SetupRouter() *gin.Engine {
 		auth.DELETE("/histories/:id", Controllers.HistoryDestroy)
 
 		v1.GET("/medias", func(c *gin.Context) {
+			fmt.Print("./Assets/logo.jpeg")
 			mediaFile := c.Query("path")
 			c.File(mediaFile)
 		})
 
-		v1.GET("/documents", Controllers.DownloadDocuments)
+		v1.GET("/ivt", Controllers.InventoryDownloadDocuments)
 
 		//v1.GET("users", Controllers.UserIndex)
 		//v1.GET("users/:id", Controllers.ShowUser)

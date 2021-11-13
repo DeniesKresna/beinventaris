@@ -16,13 +16,16 @@ func GoodsTypeIndex(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
 	search := c.DefaultQuery("search", "")
 	var goodsTypes []Models.GoodsType
+	var count int64
+
+	Configs.DB.Model(Models.GoodsType{}).Scopes(FilterModel(search, Models.GoodsType{})).Count(&count)
 
 	p, _ := (&PConfig{
 		Page:    page,
 		PerPage: pageSize,
 		Path:    c.FullPath(),
 		Sort:    "id desc",
-	}).Paginate(Configs.DB.Preload("Updater").Scopes(FilterModel(search, Models.GoodsType{})), &goodsTypes)
+	}).Paginate(Configs.DB.Preload("Updater").Scopes(FilterModel(search, Models.GoodsType{})), &goodsTypes, count)
 
 	Response.Json(c, 200, p)
 }

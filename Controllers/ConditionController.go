@@ -16,13 +16,16 @@ func ConditionIndex(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
 	search := c.DefaultQuery("search", "")
 	var conditions []Models.Condition
+	var count int64
+
+	Configs.DB.Model(Models.Condition{}).Scopes(FilterModel(search, Models.Condition{})).Count(&count)
 
 	p, _ := (&PConfig{
 		Page:    page,
 		PerPage: pageSize,
 		Path:    c.FullPath(),
 		Sort:    "id desc",
-	}).Paginate(Configs.DB.Preload("Updater").Scopes(FilterModel(search, Models.Condition{})), &conditions)
+	}).Paginate(Configs.DB.Preload("Updater").Scopes(FilterModel(search, Models.Condition{})), &conditions, count)
 
 	Response.Json(c, 200, p)
 }

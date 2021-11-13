@@ -16,13 +16,16 @@ func UnitIndex(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
 	search := c.DefaultQuery("search", "")
 	var units []Models.Unit
+	var count int64
+
+	Configs.DB.Model(Models.Unit{}).Scopes(FilterModel(search, Models.Unit{})).Count(&count)
 
 	p, _ := (&PConfig{
 		Page:    page,
 		PerPage: pageSize,
 		Path:    c.FullPath(),
 		Sort:    "id desc",
-	}).Paginate(Configs.DB.Preload("Updater").Scopes(FilterModel(search, Models.Unit{})), &units)
+	}).Paginate(Configs.DB.Preload("Updater").Scopes(FilterModel(search, Models.Unit{})), &units, count)
 
 	Response.Json(c, 200, p)
 }
