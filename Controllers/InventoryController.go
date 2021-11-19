@@ -45,13 +45,20 @@ func InventoryIndex(c *gin.Context) {
 		UpdaterName       string    `json:"user_name"`
 	}{}
 
+	var filtered Models.InventoryFilterField
+
+	if err := c.Bind(&filtered); err != nil {
+		Response.Json(c, 422, Translations.InventoryFilteredNotFound)
+		return
+	}
+
 	var res Result
 	var count int64
 
-	Configs.DB.Model(Models.Inventory{}).Where("name like ?", "%"+search+"%").Count(&count)
 	subQueryRoom := Configs.DB.Select("inventory_id,room_id").Where("entity_type = ?", "room").Order("history_time DESC").Table("histories")
 	subQueryCondition := Configs.DB.Select("inventory_id,condition_id").Where("entity_type = ?", "condition").Order("history_time DESC").Table("histories")
-	Configs.DB.Table("inventories as i").Select(`i.id,i.name,i.nup,i.year,i.deleted_at,i.updated_at, i.created_at, i.procurement_doc_url, i.status_doc_url, i.image_url,
+
+	var query = Configs.DB.Table("inventories as i").Select(`i.id,i.name,i.nup,i.year,i.deleted_at,i.updated_at, i.created_at, i.procurement_doc_url, i.status_doc_url, i.image_url,
 	i.quantity,i.price,un.name as unit_name, gt.id as goods_type_id, gt.name as goods_type_name, gt.code as goods_type_code, hr.room_id, hc.condition_id, r.name as room_name, c.name as condition_name, us.name as updater_name
 	`).Joins("left join (?) as hr on hr.inventory_id = i.id ", subQueryRoom).
 		Joins("left join (?) as hc on hc.inventory_id = i.id ", subQueryCondition).
@@ -60,7 +67,11 @@ func InventoryIndex(c *gin.Context) {
 		Joins("left join units as un on un.id = i.unit_id").
 		Joins("left join goods_types as gt on gt.id = i.goods_type_id").
 		Joins("left join users as us on us.id = i.updater_id").
-		Where("i.deleted_at is NULL").Group("i.id").Order("i.updated_at DESC").Where("i.name like ?", "%"+search+"%").Offset(pageSize * (page - 1)).Limit(pageSize).Scan(&inventories)
+		Joins("left join inventory_period as ip on ip.inventory_id = i.id").
+		Where("i.deleted_at is NULL").Where("i.name like ?", "%"+search+"%").Group("i.id").Order("i.updated_at DESC").Scopes(InventoryFilterData(filtered))
+
+	query.Count(&count)
+	query.Offset(pageSize * (page - 1)).Limit(pageSize).Scan(&inventories)
 
 	res.CurrentPage = page
 	res.Data = inventories
@@ -219,22 +230,19 @@ func InventoryStore(c *gin.Context) {
 	} else {
 		// upload inventory image
 		file, err := c.FormFile("image")
-		if err != nil {
-			Configs.DB.Unscoped().Delete(&inventory)
-			Response.Json(c, 500, Translations.InventoryCreateUploadError)
-			return
-		}
-		filename := "inventory-" + strconv.FormatUint(uint64(inventory.ID), 10) + "-" + file.Filename
-		filename = strings.ReplaceAll(filename, " ", "-")
-		if err := c.SaveUploadedFile(file, Helpers.InventoryPath(filename)); err != nil {
-			Configs.DB.Unscoped().Delete(&inventory)
-			Response.Json(c, 500, Translations.InventoryCreateUploadError)
-			return
-		}
-		if err := Configs.DB.Model(&inventory).Update("image_url", Helpers.InventoryPath(filename)).Error; err != nil {
-			Configs.DB.Unscoped().Delete(&inventory)
-			Response.Json(c, 500, Translations.InventoryCreateUploadError)
-			return
+		if err == nil {
+			filename := "inventory-" + strconv.FormatUint(uint64(inventory.ID), 10) + "-" + file.Filename
+			filename = strings.ReplaceAll(filename, " ", "-")
+			if err := c.SaveUploadedFile(file, Helpers.InventoryPath(filename)); err != nil {
+				Configs.DB.Unscoped().Delete(&inventory)
+				Response.Json(c, 500, Translations.InventoryCreateUploadError)
+				return
+			}
+			if err := Configs.DB.Model(&inventory).Update("image_url", Helpers.InventoryPath(filename)).Error; err != nil {
+				Configs.DB.Unscoped().Delete(&inventory)
+				Response.Json(c, 500, Translations.InventoryCreateUploadError)
+				return
+			}
 		}
 
 		var documentsLoop = []map[string]string{
@@ -279,21 +287,21 @@ func InventoryStore(c *gin.Context) {
 
 			var history Models.History
 			InjectStruct(&historyCreate, &history)
-			if err := Configs.DB.Create(&history).Error; err == nil {
-				historyFile, err := c.FormFile("historyImage")
-				if err == nil {
-					filename := "history-" + strconv.FormatUint(uint64(history.ID), 10) + "-" + historyFile.Filename
-					filename = strings.ReplaceAll(filename, " ", "-")
-					if err := c.SaveUploadedFile(historyFile, Helpers.HistoryPath(filename)); err == nil {
-						if err := Configs.DB.Model(&history).Update("image_url", Helpers.HistoryPath(filename)).Error; err != nil {
+			if err := Configs.DB.Create(&history).Error; err == nil { /*
+					historyFile, err := c.FormFile("historyImage")
+					if err == nil {
+						filename := "history-" + strconv.FormatUint(uint64(history.ID), 10) + "-" + historyFile.Filename
+						filename = strings.ReplaceAll(filename, " ", "-")
+						if err := c.SaveUploadedFile(historyFile, Helpers.HistoryPath(filename)); err == nil {
+							if err := Configs.DB.Model(&history).Update("image_url", Helpers.HistoryPath(filename)).Error; err != nil {
+								Configs.DB.Unscoped().Delete(&history)
+							}
+						} else {
 							Configs.DB.Unscoped().Delete(&history)
 						}
 					} else {
 						Configs.DB.Unscoped().Delete(&history)
-					}
-				} else {
-					Configs.DB.Unscoped().Delete(&history)
-				}
+					}*/
 			}
 		} else {
 			Response.Json(c, 500, err)
@@ -346,11 +354,16 @@ func InventoryUpdate(c *gin.Context) {
 		if err == nil {
 			filename := "inventory-" + strconv.FormatUint(uint64(inventory.ID), 10) + "-" + file.Filename
 			filename = strings.ReplaceAll(filename, " ", "-")
-			_ = Helpers.DeleteFile(Helpers.InventoryDocumentsPath(filename))
+			_ = Helpers.DeleteFile(Helpers.InventoryPath(filename))
 			if err := c.SaveUploadedFile(file, Helpers.InventoryPath(filename)); err == nil {
 				if err := Configs.DB.Model(&inventory).Update("image_url", Helpers.InventoryPath(filename)).Error; err != nil {
 
 				}
+			}
+		} else {
+			_ = Helpers.DeleteFile(inventory.ImageUrl)
+			if err := Configs.DB.Model(&inventory).Update("image_url", "").Error; err != nil {
+
 			}
 		}
 
@@ -512,6 +525,51 @@ func InventoryDestroy(c *gin.Context) {
 	Configs.DB.Delete(&inventory)
 
 	Response.Json(c, 200, Translations.InventoryDeleted)
+	return
+}
+
+func InventoryDownloadDoc(c *gin.Context) {
+	inventoryId := c.DefaultQuery("inventoryId", "")
+	docType := c.DefaultQuery("docType", "")
+	if inventoryId == "" || !(docType == "status" || docType == "procurement") {
+		Response.Json(c, 404, Translations.InventoryDocumentNotFound)
+		return
+	}
+	var inventory Models.Inventory
+
+	err := Configs.DB.First(&inventory, inventoryId).Error
+	if err != nil {
+		Response.Json(c, 404, Translations.InventoryNotFound)
+		return
+	}
+
+	var url string
+	if docType == "procurement" {
+		if inventory.ProcurementDocUrl == "" {
+			Response.Json(c, 404, Translations.InventoryDocumentNotFound)
+			return
+		}
+		url = inventory.ProcurementDocUrl
+	}
+	if docType == "status" {
+		if inventory.StatusDocUrl == "" {
+			Response.Json(c, 404, Translations.InventoryDocumentNotFound)
+			return
+		}
+		url = inventory.StatusDocUrl
+	}
+	file, err := os.Open("./" + url)
+	if err != nil {
+		Response.Json(c, 404, Translations.InventoryDocumentNotFound)
+		return
+	}
+	defer file.Close()
+	c.Writer.Header().Add("Content-type", "application/octet-stream")
+	_, err = io.Copy(c.Writer, file)
+	if err != nil {
+		Response.Json(c, 404, Translations.InventoryDocumentNotFound)
+		return
+	}
 	return
 }
 
