@@ -1,6 +1,8 @@
 .env
 .air.conf
+.gitignore
 vendor
 Assets/Inventories
 Assets/inventories/Documents
 Assets/Histories
+Client
