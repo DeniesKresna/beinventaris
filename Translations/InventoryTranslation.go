@@ -13,3 +13,4 @@ var InventoryUpdateDocumentError string = "Ubah Inventaris berhasil. Upload Doku
 var InventoryDeleted string = "Inventaris berhasil dihapus"
 var InventoryFilteredNotFound string = "Filter Inventaris salah"
 var InventoryUpdatePeriodSuccess string = "Update Inventarisasi berhasil"
+var InventoryDocumentNotFound string = "Dokumen Inventaris tidak ditemukan"

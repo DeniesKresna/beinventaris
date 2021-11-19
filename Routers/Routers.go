@@ -111,6 +111,7 @@ func SetupRouter() *gin.Engine {
 		})
 
 		v1.GET("/ivt", Controllers.InventoryDownloadDocuments)
+		v1.GET("/ivtdoc", Controllers.InventoryDownloadDoc)
 
 		//v1.GET("users", Controllers.UserIndex)
 		//v1.GET("users/:id", Controllers.ShowUser)
