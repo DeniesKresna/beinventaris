@@ -75,6 +75,11 @@ func HistoryStore(c *gin.Context) {
 		Response.Json(c, 422, v.Errors.One())
 		return
 	}
+
+	if historyCreate.EntityType == "" {
+		Response.Json(c, 422, "Gagal Tambah Kondisi. Jenis Kondisi harus diisi")
+		return
+	}
 	//--------------------------------------------------
 	historyCreate.UpdaterID = SessionId
 	if historyCreate.EntityType == "room" {
@@ -129,6 +134,12 @@ func HistoryUpdate(c *gin.Context) {
 		Response.Json(c, 422, v.Errors.One())
 		return
 	}
+
+	if historyUpdate.EntityType == "" {
+		Response.Json(c, 422, "Gagal Ubah Kondisi. Jenis Kondisi harus diisi")
+		return
+	}
+
 	//--------------------------------------------------
 	err := Configs.DB.First(&history, id).Error
 	if err != nil {
