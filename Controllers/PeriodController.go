@@ -163,6 +163,11 @@ func PeriodDestroy(c *gin.Context) {
 		return
 	}
 
+	if period.Active == 1 {
+		Response.Json(c, 404, "Tidak bisa hapus Periode Aktif")
+		return
+	}
+
 	Configs.DB.Delete(&period)
 
 	Response.Json(c, 200, Translations.PeriodDeleted)
