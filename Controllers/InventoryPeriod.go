@@ -60,8 +60,8 @@ func InventoryPeriodIndex(c *gin.Context) {
 	var res Result
 	var count int64
 
-	subQueryRoom := Configs.DB.Select("inventory_id,room_id").Where("entity_type = ?", "room").Order("history_time DESC").Table("histories")
-	subQueryCondition := Configs.DB.Select("inventory_id,condition_id").Where("entity_type = ?", "condition").Order("history_time DESC").Table("histories")
+	subQueryRoom := Configs.DB.Select("inventory_id,room_id").Where("entity_type = ?", "room").Order("history_time DESC").Limit(1).Table("histories")
+	subQueryCondition := Configs.DB.Select("inventory_id,condition_id").Where("entity_type = ?", "condition").Order("history_time DESC").Limit(1).Table("histories")
 
 	var query = Configs.DB.Table("inventories as i").Select(`i.id,i.name,i.nup,i.year,i.deleted_at,i.updated_at, i.created_at, i.procurement_doc_url, i.status_doc_url, i.image_url,
 	i.quantity,i.price,un.name as unit_name, gt.id as goods_type_id, gt.name as goods_type_name, gt.code as goods_type_code, hr.room_id, hc.condition_id, r.name as room_name, c.name as condition_name, us.name as updater_name
