@@ -56,11 +56,10 @@ func InventoryIndex(c *gin.Context) {
 	var count int64
 
 	subQueryRoom := Configs.DB.Raw(`select histories.inventory_id,histories.room_id 
-	from (select max(history_time) as max_date, inventory_id from histories group by inventory_id) AS hr_dates left join
-		histories on hr_dates.max_date = histories.history_time AND hr_dates.inventory_id=histories.inventory_id and entity_type = 'room' 
-	and deleted_at IS NULL`)
+	from (select max(history_time) as max_date, inventory_id from histories where entity_type = 'room' group by inventory_id) AS hr_dates left join
+		histories on hr_dates.max_date = histories.history_time AND hr_dates.inventory_id=histories.inventory_id and deleted_at IS NULL`)
 	subQueryCondition := Configs.DB.Raw(`select histories.inventory_id,histories.condition_id 
-	from (select max(history_time) as max_date, inventory_id from histories group by inventory_id) AS hc_dates left join
+	from (select max(history_time) as max_date, inventory_id from histories where entity_type = 'condition' group by inventory_id) AS hc_dates left join
 		histories on hc_dates.max_date = histories.history_time AND hc_dates.inventory_id=histories.inventory_id and entity_type = 'condition' 
 	and deleted_at IS NULL`)
 
